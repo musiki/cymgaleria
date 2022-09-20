@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <title>DVDsynth</title>
+<style>
+html, body {
+  height: 100%;
+  width: 100%;
+  background: black;
+  color: white
+}
+</style>
+
+</head>
+
+<body>
+  <div class="canvas" id="canvas" content="width=device-width, initial-scale=1.0">
+  </div>
+
+
+
+  
+<script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.2/p5.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.42/Tone.js"></script>
+
+
+
+
+ <!--
+  This script places a badge on your repl's full-browser view back to your repl's cover
+  page. Try various colors for the theme: dark, light, red, orange, yellow, lime, green,
+  teal, blue, blurple, magenta, pink!
+  -->
+<!--   <script src="https://replit.com/public/js/replit-badge.js" theme="blue" defer></script>  -->
+
+
+<script>
+    var circulos = []
+    var numcirculos = 0
+    
+    
+    //Sinte
+    
+    var gain = new Tone.Gain().toDestination()
+    
+    var synth = new Tone.Synth({
+      oscillator: {
+        type: "sine"
+      }
+    }).connect(gain);
+    
+    
+    //audio context tiene que arrancar con acción de usuario.
+    document.addEventListener('click', async () => {
+      await Tone.start();
+    })
+    
+    //canvas
+    function setup() {
+        createCanvas(windowWidth, windowHeight).mousePressed(creaCirc);  
+      cuad1 = new cuadrado()
+    }
+    
+    //Reajusta canvas a tamaño de ventana
+    function windowResized() {
+      resizeCanvas(windowWidth, windowHeight);
+    }
+    
+    
+    //Draw
+    function draw() {
+      background(0);  
+    
+      //dibuja un circulo nuevo
+      
+      for (let c of circulos) {
+        c.appear();
+        c.move();
+        //colision entre circulos los hace rebotar
+        for (let other of circulos) {
+          if (c != other && c.colOtroCirc(other)) {
+            c.xspeed = -c.xspeed
+            c.yspeed = -c.yspeed
+          } 
+            // colision con cuadrado
+            // let d = dist(c.x, c.y, cuad1.x+(cuad1.w/2),cuad1.y+(cuad1.w/2))
+            // if (d <= c.radio + (cuad1.w/2)) {
+            //   if (synth.oscillator.type == "square") {
+            //     synth.oscillator.type = "sawtooth"
+            //   } else {synth.oscillator.type = "square"}
+            //   cuad1.xspeed = -cuad1.xspeed
+            //   cuad1.yspeed = -cuad1.yspeed
+            //   c.xspeed = -c.xspeed
+            //   c.yspeed = -c.yspeed
+            // }      
+        }
+      }
+      
+      cuad1.appear();
+      cuad1.move();
+    }
+    
+    function creaCirc() {
+      const c = new circulo()
+      circulos.push(c)
+    }
+    
+    class circulo {
+      constructor() {
+        this.radio = 50;
+        this.x = random(50,width-this.radio);
+        this.y = random(50,height-this.radio);
+        this.xspeed = 3;
+        this.yspeed = 3;
+        this.r = random(0,256)
+        this.g = random(0,256)
+        this.b = random(0,256)
+    
+      }
+    
+      move() {
+        this.distMouse = dist(this.x, this.y, mouseX, mouseY);
+    
+        //cambia de dirección al clickear dentro de circulo
+        if (mouseIsPressed && this.distMouse <= this.radio && this.xspeed == 0) {
+        this.xspeed = Math.random() <= 0.5 ? -3 : 3
+        this.yspeed = Math.random() <= 0.5 ? -3 : 3
+        } else if (mouseIsPressed && this.distMouse <= this.radio && this.xspeed != 0) {
+          this.xspeed = 0
+          this.yspeed = 0
+        }
+    
+        //colisión con bordes
+        if (this.x + this.radio >= width || this.x - this.radio <= 0) {
+          this.xspeed = -this.xspeed;
+          play()
+        }
+        if (this.y + this.radio >= height || this.y - this.radio <= 0) {
+          this.yspeed = -this.yspeed;
+          play()
+        }
+        this.x = this.x + this.xspeed
+        this.y = this.y + this.yspeed    
+      }
+    
+      //cálculo tipo collition box entre circulos
+      colOtroCirc(other) {
+        let distCirc = dist(this.x, this.y, other.x, other.y);
+        return distCirc <= this.radio + other.radio;
+      }
+      
+      appear() {
+        fill(this.r,this.g,this.b);
+        ellipse(this.x, this.y, this.radio*2, this.radio*2);
+      }
+    }
+    
+    class cuadrado {
+      constructor() {
+        this.x = random(0,width-100)
+        this.y = random (0,width-100)
+        this.w = 100
+        this.xspeed = 3;
+        this.yspeed = 3;
+        this.r = random(0,256)
+        this.g = random(0,256)
+        this.b = random(0,256)
+      }
+    
+      move() {
+    
+        //colisión con bordes
+        if (this.x + this.w >= width || this.x <= 0) {
+          this.xspeed = -this.xspeed;
+          // play()
+        }
+        if (this.y + this.w >= height || this.y <= 0) {
+          this.yspeed = -this.yspeed;
+          // play()
+        }
+        this.x = this.x + this.xspeed
+        this.y = this.y + this.yspeed  
+      }
+    
+      appear() {
+        fill(this.r,this.g,this.b);
+        rect(this.x, this.y, this.w, this.w);
+      }
+    }
+    
+    
+    
+    function play(){
+      Tone.start();
+    
+    </script>
+</body>
+
+</html>
